@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI HTML Code Generator Bot</title>
+    <title>Copilot-Style Code Generator</title>
     <style>
         * {
             margin: 0;
@@ -12,844 +12,554 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
         }
 
-        .container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 1200px;
-            width: 100%;
-            padding: 40px;
+        .sidebar {
+            width: 250px;
+            background: #010409;
+            border-right: 1px solid #30363d;
+            padding: 16px;
+            overflow-y: auto;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        .input-section {
-            margin-bottom: 30px;
-        }
-
-        label {
-            display: block;
-            color: #333;
+        .sidebar-title {
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 10px;
+            color: #8b949e;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-history {
+            list-style: none;
+        }
+
+        .chat-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #8b949e;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            border-left: 3px solid transparent;
+        }
+
+        .chat-item:hover {
+            background: #161b22;
+            color: #c9d1d9;
+        }
+
+        .chat-item.active {
+            background: #1f6feb;
+            color: #ffffff;
+            border-left-color: #58a6ff;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0d1117;
+        }
+
+        .header {
+            background: #010409;
+            border-bottom: 1px solid #30363d;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            background: #238636;
+            border: 1px solid #2ea043;
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #2ea043;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            border-color: #30363d;
+            color: #c9d1d9;
+        }
+
+        .btn.secondary:hover {
+            background: #161b22;
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .user-message .message-content {
+            background: #1f6feb;
+            color: #ffffff;
+        }
+
+        .assistant-message .message-content {
+            background: #161b22;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+        }
+
+        .code-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #161b22;
+            padding: 8px 12px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #8b949e;
+        }
+
+        .code-content {
+            padding: 12px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #79c0ff;
+            max-height: 300px;
+        }
+
+        .copy-code-btn {
+            background: none;
+            border: none;
+            color: #58a6ff;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .copy-code-btn:hover {
+            background: #30363d;
+        }
+
+        .input-area {
+            border-top: 1px solid #30363d;
+            padding: 16px 20px;
+            background: #0d1117;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
         }
 
         textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 14px;
-            resize: vertical;
-            min-height: 100px;
-            transition: border-color 0.3s;
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: none;
+            max-height: 150px;
+            transition: all 0.2s;
         }
 
         textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
         }
 
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 15px;
-            flex-wrap: wrap;
+        textarea::placeholder {
+            color: #6e7681;
         }
 
-        button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .generate-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .generate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .generate-btn:active {
-            transform: translateY(0);
-        }
-
-        .clear-btn {
-            background: #f5f5f5;
-            color: #333;
-            border: 2px solid #e0e0e0;
-        }
-
-        .clear-btn:hover {
-            background: #efefef;
-        }
-
-        .output-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid #f0f0f0;
-            display: none;
-        }
-
-        .output-section.active {
-            display: block;
-        }
-
-        .output-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .output-header h2 {
-            color: #333;
-            font-size: 18px;
-        }
-
-        .output-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .copy-btn, .download-btn, .preview-btn {
-            padding: 10px 16px;
-            font-size: 14px;
-            border: none;
+        .send-btn {
+            background: #238636;
+            border: 1px solid #2ea043;
+            color: #ffffff;
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .copy-btn {
-            background: #f0f0f0;
-            color: #333;
-            border: 2px solid #ddd;
+        .send-btn:hover {
+            background: #2ea043;
         }
 
-        .copy-btn:hover {
-            background: #e8e8e8;
-        }
-
-        .copy-btn.copied {
-            background: #4caf50;
-            color: white;
-            border-color: #4caf50;
-        }
-
-        .download-btn {
-            background: #4caf50;
-            color: white;
-        }
-
-        .download-btn:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
-        }
-
-        .preview-btn {
-            background: #2196F3;
-            color: white;
-        }
-
-        .preview-btn:hover {
-            background: #0b7dda;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
-        }
-
-        .code-output {
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            overflow-x: auto;
-            max-height: 500px;
-            overflow-y: auto;
-            color: #333;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+        .send-btn:disabled {
+            background: #21262d;
+            border-color: #30363d;
+            color: #6e7681;
+            cursor: not-allowed;
         }
 
         .loading {
-            text-align: center;
-            padding: 20px;
-            color: #667eea;
+            display: flex;
+            gap: 4px;
+            align-items: center;
         }
 
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+        .loading-dot {
+            width: 4px;
+            height: 4px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-            vertical-align: middle;
+            background: #6e7681;
+            animation: loading 1.4s infinite;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
         }
 
-        .error {
-            background: #ffebee;
-            border: 2px solid #ef5350;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.4);
-            overflow: auto;
+        @keyframes loading {
+            0%, 60%, 100% {
+                opacity: 0.3;
+            }
+            30% {
+                opacity: 1;
+            }
         }
 
-        .modal.active {
-            display: block;
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
         }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 1000px;
-            max-height: 80vh;
-            overflow-y: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .modal-close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+        .action-btn {
+            background: #161b22;
+            border: 1px solid #30363d;
+            color: #58a6ff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
             cursor: pointer;
-            padding: 10px 20px;
+            transition: all 0.2s;
         }
 
-        .modal-close:hover {
-            color: #000;
+        .action-btn:hover {
+            background: #0d419f;
+            border-color: #58a6ff;
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            color: #6e7681;
+        }
 
-            h1 {
-                font-size: 24px;
-            }
+        .empty-state h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #c9d1d9;
+        }
 
-            .button-group {
-                flex-direction: column;
-            }
+        .empty-state p {
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
 
-            .button-group button {
-                width: 100%;
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
             }
-
-            .output-actions {
-                flex-direction: column;
-            }
-
-            .output-actions button {
-                width: 100%;
-            }
-
-            .code-output {
-                font-size: 10px;
+            .message-content {
+                max-width: 90%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🤖 AI HTML Code Generator Bot</h1>
-        <p class="subtitle">Describe ANY game or web project and I'll code it in HTML for you - including complex games!</p>
-
-        <div class="input-section">
-            <label for="prompt">Describe what you want to create:</label>
-            <textarea id="prompt" placeholder="Examples: 2D block game, Tic-tac-toe, Snake game, Flappy bird, Space shooter, RPG game, Zelda-like game, Platformer, Racing game, 3D game, Multiplayer game, etc."></textarea>
-            <div class="button-group">
-                <button class="generate-btn" onclick="generateCode()">🚀 Generate Code</button>
-                <button class="clear-btn" onclick="clearInput()">Clear</button>
-            </div>
-        </div>
-
-        <div class="output-section" id="outputSection">
-            <div class="output-header">
-                <h2>Generated HTML Code</h2>
-                <div class="output-actions">
-                    <button class="preview-btn" onclick="previewCode()">👁️ Preview</button>
-                    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy</button>
-                    <button class="download-btn" onclick="downloadCode()">⬇️ Download</button>
-                </div>
-            </div>
-            <div class="code-output" id="codeOutput"></div>
-        </div>
-
-        <div id="loadingIndicator" class="loading" style="display: none;">
-            <span class="spinner"></span>Generating your code...
-        </div>
-
-        <div id="errorMessage"></div>
+    <div class="sidebar">
+        <div class="sidebar-title">Chat History</div>
+        <ul class="chat-history" id="chatHistory">
+            <li class="chat-item active">New Chat</li>
+        </ul>
     </div>
 
-    <!-- Preview Modal -->
-    <div id="previewModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closePreview()">&times;</span>
-            <iframe id="previewFrame" style="width: 100%; height: 90vh; border: none;"></iframe>
+    <div class="main-content">
+        <div class="header">
+            <h1>Code Generator</h1>
+            <div class="header-buttons">
+                <button class="btn secondary" onclick="clearChat()">Clear</button>
+                <button class="btn" onclick="exportCode()">Export</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="empty-state">
+                <h2>✨ Code Generator</h2>
+                <p>Describe any game or project and I'll generate the HTML code for you</p>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Describe the code you want... (e.g., 'Create a space shooter game with enemies, bullets, and score')"
+                    rows="1"
+                    onkeydown="handleKeypress(event)"
+                ></textarea>
+                <button class="send-btn" onclick="sendMessage()" id="sendBtn">
+                    <span>Send</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        async function generateCode() {
-            const prompt = document.getElementById('prompt').value.trim();
-            
-            if (!prompt) {
-                showError('Please enter a description of what you want to create');
-                return;
-            }
+        let conversationHistory = [];
+        let generatedCode = '';
 
-            showLoading(true);
-            clearError();
-
-            try {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                const generatedHTML = generateCodeFromPrompt(prompt);
-                
-                document.getElementById('codeOutput').textContent = generatedHTML;
-                document.getElementById('outputSection').classList.add('active');
-                
-                showLoading(false);
-            } catch (error) {
-                showError('Failed to generate code. Please try again.');
-                showLoading(false);
+        function handleKeypress(event) {
+            if (event.key === 'Enter' && event.ctrlKey) {
+                sendMessage();
+            } else if (event.key === 'Enter') {
+                // Allow normal enter for line breaks
             }
         }
 
-        function generateCodeFromPrompt(prompt) {
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add user message to chat
+            addMessageToChat('user', message);
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Simulate processing
+            addMessageToChat('assistant-loading', 'Processing your request...');
+
+            setTimeout(() => {
+                const response = generateResponse(message);
+                updateLastMessage('assistant', response);
+            }, 1500);
+        }
+
+        function addMessageToChat(role, content) {
+            const container = document.getElementById('chatContainer');
+
+            // Clear empty state
+            if (container.querySelector('.empty-state')) {
+                container.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : ''}`;
+            messageDiv.id = `msg-${Date.now()}`;
+
+            if (role === 'assistant-loading') {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="loading">
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = content;
+                messageDiv.appendChild(messageContent);
+            }
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+
+            return messageDiv;
+        }
+
+        function updateLastMessage(role, content) {
+            const container = document.getElementById('chatContainer');
+            const lastMessage = container.querySelector('.message:last-child');
+
+            if (lastMessage) {
+                lastMessage.className = `message ${role === 'user' ? 'user-message' : ''}`;
+                lastMessage.innerHTML = '';
+
+                if (content.includes('<!DOCTYPE')) {
+                    // This is code
+                    generatedCode = content;
+                    const div = document.createElement('div');
+                    div.className = 'message-content';
+                    div.innerHTML = `
+                        Generated HTML code. You can preview, copy, or download it.
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>generated_code.html</span>
+                                <button class="copy-code-btn" onclick="copyCode()">Copy</button>
+                            </div>
+                            <div class="code-content">${escapeHtml(content.substring(0, 500))}...</div>
+                        </div>
+                    `;
+                    lastMessage.appendChild(div);
+
+                    // Add action buttons
+                    const actions = document.createElement('div');
+                    actions.className = 'actions';
+                    actions.innerHTML = `
+                        <button class="action-btn" onclick="previewCode()">👁️ Preview</button>
+                        <button class="action-btn" onclick="copyCode()">📋 Copy Full Code</button>
+                        <button class="action-btn" onclick="downloadCode()">⬇️ Download</button>
+                    `;
+                    lastMessage.appendChild(actions);
+                } else {
+                    const div = document.createElement('div');
+                    div.className = 'message-content';
+                    div.textContent = content;
+                    lastMessage.appendChild(div);
+                }
+            }
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function generateResponse(prompt) {
             const lowerPrompt = prompt.toLowerCase();
 
-            if (lowerPrompt.includes('space') && lowerPrompt.includes('shoot')) {
-                return generateSpaceShooter();
-            } else if (lowerPrompt.includes('rpg') || lowerPrompt.includes('role')) {
-                return generateRPGGame();
-            } else if (lowerPrompt.includes('platformer')) {
-                return generatePlatformer();
-            } else if (lowerPrompt.includes('zelda') || lowerPrompt.includes('dungeon')) {
-                return generateZeldaLike();
-            } else if (lowerPrompt.includes('race') || lowerPrompt.includes('racing') || lowerPrompt.includes('car')) {
-                return generateRacingGame();
-            } else if (lowerPrompt.includes('puzzle')) {
-                return generatePuzzleGame();
-            } else if (lowerPrompt.includes('breakout') || lowerPrompt.includes('brick')) {
-                return generateBreakoutGame();
-            } else if (lowerPrompt.includes('asteroids') || lowerPrompt.includes('asteroid')) {
-                return generateAsteroids();
-            } else if (lowerPrompt.includes('block') && lowerPrompt.includes('game')) {
-                return generateBlockGame();
-            } else if (lowerPrompt.includes('tic') && lowerPrompt.includes('tac')) {
-                return generateTicTacToe();
-            } else if (lowerPrompt.includes('snake')) {
-                return generateSnakeGame();
-            } else if (lowerPrompt.includes('flappy')) {
-                return generateFlappyBird();
-            } else if (lowerPrompt.includes('pong') || lowerPrompt.includes('paddle')) {
-                return generatePongGame();
-            } else {
-                return generateCustomProject(prompt);
-            }
-        }
+            // Extract features from description
+            const features = {
+                hasEnemies: /enemy|enemies|opponent|npc/.test(lowerPrompt),
+                hasScore: /score|points|level|wave/.test(lowerPrompt),
+                hasHealth: /health|lives|damage/.test(lowerPrompt),
+                hasWeapons: /shoot|bullet|weapon|projectile|fire/.test(lowerPrompt),
+                hasMovement: /move|left|right|up|down|control/.test(lowerPrompt),
+                hasGravity: /gravity|jump|fall|platform/.test(lowerPrompt),
+                hasItems: /item|coin|collect|pickup|power|upgrade/.test(lowerPrompt),
+                hasCollision: /collision|collide|crash|hit/.test(lowerPrompt),
+            };
 
-        function generateSpaceShooter() {
-            return `<!DOCTYPE html>
+            // Generate HTML code
+            let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Space Shooter Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Game - ${escapeHtml(prompt.substring(0, 30))}</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            background: #000;
+            background: #0d1117;
             font-family: Arial, sans-serif;
         }
         canvas {
-            border: 3px solid #0f0;
-            background: radial-gradient(circle, #1a1a2e 0%, #000 100%);
+            border: 2px solid #58a6ff;
+            background: #010409;
         }
-        #info {
+        #hud {
             position: absolute;
             top: 20px;
             left: 20px;
-            color: #0f0;
-            font-size: 20px;
-            text-shadow: 0 0 10px #0f0;
+            color: #58a6ff;
+            font-size: 16px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="info">
-        Score: <span id="score">0</span> | Lives: <span id="lives">3</span> | Enemies: <span id="enemies">0</span>
+    <div id="hud">
+        ${features.hasScore ? 'Score: <span id="score">0</span> | ' : ''}${features.hasHealth ? 'Health: <span id="health">100</span>' : ''}
     </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Player
-        let player = { x: canvas.width / 2, y: canvas.height - 50, width: 40, height: 40, speed: 5, bullets: [] };
-        
-        // Enemies
-        let enemies = [];
-        let enemyBullets = [];
-        let score = 0;
-        let lives = 3;
-        let level = 1;
-
-        // Keyboard input
-        const keys = {};
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-        window.addEventListener('click', shootBullet);
-
-        function shootBullet() {
-            player.bullets.push({ x: player.x + player.width / 2, y: player.y, width: 5, height: 15, speed: 7 });
-        }
-
-        function spawnEnemies() {
-            if (enemies.length === 0) {
-                level++;
-                for (let i = 0; i < 3 + level; i++) {
-                    enemies.push({
-                        x: Math.random() * (canvas.width - 40),
-                        y: Math.random() * 150,
-                        width: 40,
-                        height: 40,
-                        speed: 2 + level * 0.5,
-                        health: level
-                    });
-                }
-            }
-        }
-
-        function update() {
-            // Player movement
-            if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
-            if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += player.speed;
-
-            // Update bullets
-            player.bullets = player.bullets.filter(b => {
-                b.y -= b.speed;
-                return b.y > 0;
-            });
-
-            // Enemy movement and shooting
-            enemies.forEach((e, idx) => {
-                e.x += (Math.random() - 0.5) * 3;
-                if (e.x < 0 || e.x > canvas.width - e.width) e.speed *= -1;
-
-                if (Math.random() < 0.01) {
-                    enemyBullets.push({ x: e.x + e.width / 2, y: e.y, width: 5, height: 15, speed: 4 });
-                }
-
-                // Check bullet collisions
-                player.bullets.forEach((b, bidx) => {
-                    if (b.x < e.x + e.width && b.x + b.width > e.x && b.y < e.y + e.height && b.y + b.height > e.y) {
-                        e.health--;
-                        player.bullets.splice(bidx, 1);
-                        if (e.health <= 0) {
-                            enemies.splice(idx, 1);
-                            score += 100;
-                        }
-                    }
-                });
-            });
-
-            // Enemy bullets
-            enemyBullets = enemyBullets.filter(b => {
-                b.y += b.speed;
-                if (b.x < player.x + player.width && b.x + b.width > player.x && b.y < player.y + player.height && b.y + b.height > player.y) {
-                    lives--;
-                    return false;
-                }
-                return b.y < canvas.height;
-            });
-
-            // Enemy collisions
-            enemies.forEach(e => {
-                if (e.y > canvas.height) lives--;
-            });
-
-            enemies = enemies.filter(e => e.y < canvas.height);
-            spawnEnemies();
-
-            document.getElementById('score').textContent = score;
-            document.getElementById('lives').textContent = lives;
-            document.getElementById('enemies').textContent = enemies.length;
-
-            if (lives <= 0) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#0f0';
-                ctx.font = 'bold 40px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
-                ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 50);
-            }
-        }
-
-        function draw() {
-            // Clear
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Player
-            ctx.fillStyle = '#0f0';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-
-            // Player bullets
-            ctx.fillStyle = '#ff0';
-            player.bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
-
-            // Enemies
-            ctx.fillStyle = '#f00';
-            enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
-
-            // Enemy bullets
-            ctx.fillStyle = '#f0f';
-            enemyBullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
-        }
-
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateRPGGame() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>RPG Adventure Game</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #1a1a2e;
-            margin: 0;
-        }
-        .game-container {
-            background: #16213e;
-            border: 3px solid #e94560;
-            color: #eee;
-            padding: 20px;
-            max-width: 600px;
-        }
-        .map {
-            background: #0f3460;
-            border: 2px solid #16213e;
-            padding: 20px;
-            margin-bottom: 20px;
-            position: relative;
-            width: 500px;
-            height: 300px;
-        }
-        .player {
-            position: absolute;
-            background: #00d4ff;
-            width: 30px;
-            height: 30px;
-            border: 2px solid #00d4ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        .enemy {
-            position: absolute;
-            background: #e94560;
-            width: 30px;
-            height: 30px;
-            border: 2px solid #e94560;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .npc {
-            position: absolute;
-            background: #ffd700;
-            width: 30px;
-            height: 30px;
-            border: 2px solid #ffd700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .stat-box {
-            background: #0f3460;
-            padding: 10px;
-            border: 1px solid #e94560;
-            text-align: center;
-        }
-        .stat-label {
-            font-size: 12px;
-            color: #999;
-        }
-        .stat-value {
-            font-size: 24px;
-            color: #00d4ff;
-            font-weight: bold;
-        }
-        .actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px;
-            background: #e94560;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover { background: #00d4ff; color: #000; }
-        .log { background: #0f3460; padding: 10px; border: 1px solid #e94560; height: 100px; overflow-y: auto; font-size: 12px; }
-    </style>
-</head>
-<body>
-    <div class="game-container">
-        <h1>⚔️ RPG Adventure</h1>
-        <div class="map" id="map"></div>
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-label">HEALTH</div>
-                <div class="stat-value" id="health">100/100</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">LEVEL</div>
-                <div class="stat-value" id="level">1</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">EXP</div>
-                <div class="stat-value" id="exp">0</div>
-            </div>
-        </div>
-        <div class="actions">
-            <button onclick="movePlayer(-20, 0)">← LEFT</button>
-            <button onclick="movePlayer(0, -20)">↑ UP</button>
-            <button onclick="movePlayer(0, 20)">↓ DOWN</button>
-            <button onclick="movePlayer(20, 0)">RIGHT →</button>
-            <button onclick="attack()">⚔️ ATTACK</button>
-            <button onclick="defend()">🛡️ DEFEND</button>
-            <button onclick="heal()">❤️ HEAL</button>
-            <button onclick="interact()">🗣️ TALK</button>
-        </div>
-        <div class="log" id="log"></div>
-    </div>
-
-    <script>
-        let player = { x: 235, y: 135, health: 100, maxHealth: 100, level: 1, exp: 0, defending: false };
-        let enemies = [
-            { x: 100, y: 100, health: 30, maxHealth: 30 },
-            { x: 400, y: 200, health: 30, maxHealth: 30 }
-        ];
-        let npcs = [{ x: 50, y: 50 }];
-        let log = [];
-
-        function addLog(msg) {
-            log.push(msg);
-            if (log.length > 5) log.shift();
-            document.getElementById('log').innerHTML = log.map(l => '<div>' + l + '</div>').join('');
-            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
-        }
-
-        function render() {
-            const map = document.getElementById('map');
-            map.innerHTML = '';
-
-            // NPCs
-            npcs.forEach(npc => {
-                const div = document.createElement('div');
-                div.className = 'npc';
-                div.textContent = '?';
-                div.style.left = npc.x + 'px';
-                div.style.top = npc.y + 'px';
-                map.appendChild(div);
-            });
-
-            // Enemies
-            enemies.forEach(e => {
-                const div = document.createElement('div');
-                div.className = 'enemy';
-                div.textContent = 'E';
-                div.style.left = e.x + 'px';
-                div.style.top = e.y + 'px';
-                map.appendChild(div);
-            });
-
-            // Player
-            const playerDiv = document.createElement('div');
-            playerDiv.className = 'player';
-            playerDiv.textContent = '@';
-            playerDiv.style.left = player.x + 'px';
-            playerDiv.style.top = player.y + 'px';
-            map.appendChild(playerDiv);
-
-            document.getElementById('health').textContent = player.health + '/' + player.maxHealth;
-            document.getElementById('level').textContent = player.level;
-            document.getElementById('exp').textContent = player.exp;
-        }
-
-        function movePlayer(dx, dy) {
-            player.x = Math.max(0, Math.min(470, player.x + dx));
-            player.y = Math.max(0, Math.min(270, player.y + dy));
-            enemies.forEach(e => {
-                e.x += (Math.random() - 0.5) * 20;
-                e.y += (Math.random() - 0.5) * 20;
-                checkCollision(e);
-            });
-            render();
-        }
-
-        function attack() {
-            enemies.forEach(e => {
-                if (Math.abs(player.x - e.x) < 50 && Math.abs(player.y - e.y) < 50) {
-                    const damage = Math.floor(Math.random() * 20) + 10;
-                    e.health -= damage;
-                    addLog('Dealt ' + damage + ' damage!');
-                    if (e.health <= 0) {
-                        addLog('Enemy defeated!');
-                        player.exp += 50;
-                    }
-                }
-            });
-            enemies = enemies.filter(e => e.health > 0);
-            render();
-        }
-
-        function defend() {
-            player.defending = true;
-            addLog('Defending...');
-            setTimeout(() => { player.defending = false; }, 2000);
-        }
-
-        function heal() {
-            player.health = player.maxHealth;
-            addLog('Fully healed!');
-            render();
-        }
-
-        function interact() {
-            npcs.forEach(npc => {
-                if (Math.abs(player.x - npc.x) < 50 && Math.abs(player.y - npc.y) < 50) {
-                    addLog('NPC: Welcome adventurer!');
-                }
-            });
-        }
-
-        function checkCollision(enemy) {
-            if (Math.abs(player.x - enemy.x) < 40 && Math.abs(player.y - enemy.y) < 40) {
-                const damage = Math.floor(Math.random() * 10) + 5;
-                if (!player.defending) {
-                    player.health -= damage;
-                    addLog('Took ' + damage + ' damage!');
-                }
-            }
-        }
-
-        render();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generatePlatformer() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Platformer Game</title>
-    <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #87CEEB; }
-        canvas { border: 5px solid #333; background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%); }
-        #info { position: absolute; top: 20px; color: #333; font-size: 18px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div id="info">Lives: <span id="lives">3</span> | Level: <span id="level">1</span> | Score: <span id="score">0</span></div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 
     <script>
@@ -857,722 +567,128 @@
         const ctx = canvas.getContext('2d');
 
         let player = {
-            x: 100,
-            y: 400,
-            width: 30,
+            x: canvas.width / 2,
+            y: canvas.height - 60,
+            width: 40,
             height: 40,
-            velocityY: 0,
-            velocityX: 0,
-            jumping: false,
             speed: 5,
-            jumpPower: 12
+            velocityX: 0,
+            velocityY: 0,
+            ${features.hasHealth ? 'health: 100,' : ''}
+            ${features.hasWeapons ? 'bullets: [],' : ''}
         };
 
-        let platforms = [
-            { x: 0, y: 550, width: 800, height: 50 },
-            { x: 200, y: 480, width: 150, height: 20 },
-            { x: 450, y: 420, width: 150, height: 20 },
-            { x: 100, y: 360, width: 150, height: 20 },
-            { x: 600, y: 300, width: 150, height: 20 }
-        ];
-
-        let coins = [
-            { x: 250, y: 450, width: 20, height: 20, collected: false },
-            { x: 500, y: 390, width: 20, height: 20, collected: false },
-            { x: 150, y: 330, width: 20, height: 20, collected: false }
-        ];
-
-        let enemies = [
-            { x: 300, y: 450, width: 30, height: 30, speed: 2, direction: 1 }
-        ];
-
-        let score = 0;
-        let lives = 3;
-        let level = 1;
-        const gravity = 0.6;
-        const keys = {};
-
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-
-        function update() {
-            player.velocityY += gravity;
-            player.x += player.velocityX;
-            player.y += player.velocityY;
-            player.velocityX = 0;
-
-            if (keys['ArrowLeft']) player.velocityX = -player.speed;
-            if (keys['ArrowRight']) player.velocityX = player.speed;
-
-            // Collision with platforms
-            platforms.forEach(p => {
-                if (player.velocityY > 0 && player.y + player.height <= p.y + 10 && player.y + player.height >= p.y - 10 && player.x + player.width > p.x && player.x < p.x + p.width) {
-                    player.velocityY = 0;
-                    player.y = p.y - player.height;
-                    player.jumping = false;
-                }
-            });
-
-            if (keys[' '] && !player.jumping) {
-                player.velocityY = -player.jumpPower;
-                player.jumping = true;
-            }
-
-            // Coin collection
-            coins.forEach(coin => {
-                if (!coin.collected && player.x < coin.x + coin.width && player.x + player.width > coin.x && player.y < coin.y + coin.height && player.y + player.height > coin.y) {
-                    coin.collected = true;
-                    score += 10;
-                }
-            });
-
-            // Enemies
-            enemies.forEach(e => {
-                e.x += e.speed * e.direction;
-                if (e.x < 0 || e.x > canvas.width) e.direction *= -1;
-
-                if (player.x < e.x + e.width && player.x + player.width > e.x && player.y < e.y + e.height && player.y + player.height > e.y) {
-                    lives--;
-                    player.y = 400;
-                }
-            });
-
-            if (player.y > canvas.height) {
-                lives--;
-                player.y = 400;
-            }
-
-            if (lives <= 0) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 40px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
-            }
-
-            document.getElementById('lives').textContent = lives;
-            document.getElementById('score').textContent = score;
-        }
-
-        function draw() {
-            // Sky
-            ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Platforms
-            ctx.fillStyle = '#8B4513';
-            platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
-
-            // Coins
-            ctx.fillStyle = '#FFD700';
-            coins.forEach(coin => {
-                if (!coin.collected) {
-                    ctx.beginPath();
-                    ctx.arc(coin.x + coin.width / 2, coin.y + coin.height / 2, 10, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            });
-
-            // Enemies
-            ctx.fillStyle = '#FF0000';
-            enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
-
-            // Player
-            ctx.fillStyle = '#00FF00';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-        }
-
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateZeldaLike() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Zelda-Like Adventure</title>
-    <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #2c3e50; }
-        canvas { border: 5px solid #34495e; background: #27ae60; }
-        #hud { position: absolute; top: 10px; left: 10px; color: #fff; font-family: Arial, sans-serif; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 5px; }
-    </style>
-</head>
-<body>
-    <div id="hud">
-        ❤️ <span id="health">6</span>/6<br>
-        🗡️ Sword<br>
-        💰 <span id="gold">0</span><br>
-        <span id="status">Explore the dungeon</span>
-    </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const TILE_SIZE = 40;
-
-        let player = { x: 10, y: 10, health: 6, gold: 0 };
+        ${features.hasEnemies ? `
+        let enemies = [];
+        let enemyBullets = [];
         
-        let enemies = [
-            { x: 15, y: 15, health: 2, type: 'slime' },
-            { x: 8, y: 5, health: 3, type: 'goblin' }
-        ];
-
-        let items = [
-            { x: 12, y: 8, type: 'heart' },
-            { x: 18, y: 18, type: 'gold' }
-        ];
-
-        let obstacles = [
-            { x: 7, y: 3 }, { x: 7, y: 4 }, { x: 7, y: 5 },
-            { x: 14, y: 12 }, { x: 15, y: 12 }
-        ];
-
-        const keys = {};
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-        window.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = Math.floor((e.clientX - rect.left) / TILE_SIZE);
-            const mouseY = Math.floor((e.clientY - rect.top) / TILE_SIZE);
-            attackDirection(mouseX, mouseY);
-        });
-
-        function canMove(x, y) {
-            if (x < 0 || x >= 20 || y < 0 || y >= 15) return false;
-            return !obstacles.some(o => o.x === x && o.y === y);
-        }
-
-        function attackDirection(targetX, targetY) {
-            enemies = enemies.filter(e => {
-                if (Math.abs(e.x - targetX) < 2 && Math.abs(e.y - targetY) < 2) {
-                    e.health--;
-                    if (e.health <= 0) {
-                        player.gold += 10;
-                        return false;
-                    }
-                }
-                return true;
-            });
-        }
-
-        function update() {
-            let newX = player.x;
-            let newY = player.y;
-
-            if (keys['ArrowUp']) newY--;
-            if (keys['ArrowDown']) newY++;
-            if (keys['ArrowLeft']) newX--;
-            if (keys['ArrowRight']) newX++;
-
-            if (canMove(newX, newY)) {
-                player.x = newX;
-                player.y = newY;
-            }
-
-            items = items.filter(item => {
-                if (item.x === player.x && item.y === player.y) {
-                    if (item.type === 'heart') player.health = Math.min(6, player.health + 2);
-                    if (item.type === 'gold') player.gold += 5;
-                    return false;
-                }
-                return true;
-            });
-
-            enemies.forEach(e => {
-                const dx = player.x - e.x;
-                const dy = player.y - e.y;
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    e.x += dx > 0 ? 1 : -1;
-                } else {
-                    e.y += dy > 0 ? 1 : -1;
-                }
-
-                if (e.x === player.x && e.y === player.y) {
-                    player.health--;
-                }
-            });
-
-            document.getElementById('health').textContent = player.health;
-            document.getElementById('gold').textContent = player.gold;
-
-            if (player.health <= 0) {
-                document.getElementById('status').textContent = 'Game Over!';
-            }
-        }
-
-        function draw() {
-            ctx.fillStyle = '#27ae60';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Obstacles
-            ctx.fillStyle = '#1c2833';
-            obstacles.forEach(o => ctx.fillRect(o.x * TILE_SIZE, o.y * TILE_SIZE, TILE_SIZE, TILE_SIZE));
-
-            // Items
-            ctx.fillStyle = '#f1c40f';
-            items.forEach(item => {
-                ctx.beginPath();
-                ctx.arc(item.x * TILE_SIZE + TILE_SIZE / 2, item.y * TILE_SIZE + TILE_SIZE / 2, 8, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // Enemies
-            ctx.fillStyle = '#e74c3c';
-            enemies.forEach(e => {
-                ctx.fillRect(e.x * TILE_SIZE, e.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                ctx.fillStyle = '#fff';
-                ctx.font = '20px Arial';
-                ctx.fillText('E', e.x * TILE_SIZE + 10, e.y * TILE_SIZE + 25);
-                ctx.fillStyle = '#e74c3c';
-            });
-
-            // Player
-            ctx.fillStyle = '#3498db';
-            ctx.fillRect(player.x * TILE_SIZE, player.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            ctx.fillStyle = '#fff';
-            ctx.font = '20px Arial';
-            ctx.fillText('@', player.x * TILE_SIZE + 12, player.y * TILE_SIZE + 25);
-        }
-
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateRacingGame() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Racing Game</title>
-    <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #000; }
-        canvas { border: 5px solid #fff; background: #000; }
-        #hud { position: absolute; top: 10px; color: #0f0; font-family: Arial, sans-serif; font-size: 18px; text-shadow: 0 0 10px #0f0; }
-    </style>
-</head>
-<body>
-    <div id="hud">Speed: <span id="speed">0</span> | Position: <span id="position">1</span>/<span id="total">3</span></div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let player = { x: 300, y: 500, width: 40, height: 60, speed: 0, maxSpeed: 15, acceleration: 0.3 };
-        let road = { x: 150, y: 0, width: 500, scroll: 0 };
-        let opponents = [
-            { x: 250, y: 200, width: 40, height: 60, speed: 8 },
-            { x: 350, y: 100, width: 40, height: 60, speed: 9 }
-        ];
-        let score = 0;
-        const keys = {};
-
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-
-        function update() {
-            if (keys['ArrowUp']) player.speed = Math.min(player.speed + player.acceleration, player.maxSpeed);
-            else player.speed = Math.max(0, player.speed - player.acceleration);
-
-            if (keys['ArrowLeft'] && player.x > road.x) player.x -= 5;
-            if (keys['ArrowRight'] && player.x + player.width < road.x + road.width) player.x += 5;
-
-            road.scroll += player.speed;
-            score = Math.floor(road.scroll / 10);
-
-            opponents.forEach(opp => {
-                opp.speed = 8 + Math.sin(road.scroll * 0.01) * 2;
-                if (opp.y > canvas.height) opp.y = -100;
-                opp.y += opp.speed;
-            });
-
-            document.getElementById('speed').textContent = Math.floor(player.speed);
-            document.getElementById('position').textContent = 1;
-        }
-
-        function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Road
-            ctx.fillStyle = '#444';
-            ctx.fillRect(road.x, 0, road.width, canvas.height);
-
-            // Road markings
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 3;
-            for (let i = -3; i < 10; i++) {
-                const y = (i * 100 + (road.scroll % 100)) % canvas.height;
-                ctx.beginPath();
-                ctx.moveTo(canvas.width / 2 - 20, y);
-                ctx.lineTo(canvas.width / 2 + 20, y);
-                ctx.stroke();
-            }
-
-            // Opponents
-            ctx.fillStyle = '#f00';
-            opponents.forEach(opp => {
-                ctx.fillRect(opp.x, opp.y, opp.width, opp.height);
-            });
-
-            // Player car
-            ctx.fillStyle = '#0f0';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-            ctx.fillStyle = '#00f';
-            ctx.fillRect(player.x + 5, player.y + 10, 30, 20);
-        }
-
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generatePuzzleGame() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Puzzle Game</title>
-    <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h1 { text-align: center; margin-bottom: 20px; }
-        .board { display: grid; grid-template-columns: repeat(4, 80px); gap: 10px; margin-bottom: 20px; }
-        .tile { background: #667eea; color: white; border: none; width: 80px; height: 80px; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 5px; }
-        .tile:hover { background: #5568d3; }
-        .tile.empty { background: #f0f0f0; cursor: default; }
-        .tile.empty:hover { background: #f0f0f0; }
-        #moves { text-align: center; font-size: 18px; margin-bottom: 20px; }
-        button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🧩 Sliding Puzzle</h1>
-        <div id="moves">Moves: <span id="moveCount">0</span></div>
-        <div class="board" id="board"></div>
-        <button onclick="initGame()">New Game</button>
-    </div>
-
-    <script>
-        let tiles = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
-        let moveCount = 0;
-
-        function initGame() {
-            tiles = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
-            for (let i = 0; i < 100; i++) {
-                const emptyIdx = tiles.indexOf(0);
-                const moves = [];
-                if (emptyIdx > 3) moves.push(emptyIdx - 4);
-                if (emptyIdx < 12) moves.push(emptyIdx + 4);
-                if (emptyIdx % 4 > 0) moves.push(emptyIdx - 1);
-                if (emptyIdx % 4 < 3) moves.push(emptyIdx + 1);
-                const randomMove = moves[Math.floor(Math.random() * moves.length)];
-                [tiles[emptyIdx], tiles[randomMove]] = [tiles[randomMove], tiles[emptyIdx]];
-            }
-            moveCount = 0;
-            render();
-        }
-
-        function render() {
-            const board = document.getElementById('board');
-            board.innerHTML = '';
-            tiles.forEach((tile, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'tile' + (tile === 0 ? ' empty' : '');
-                btn.textContent = tile === 0 ? '' : tile;
-                btn.onclick = () => moveTile(i);
-                board.appendChild(btn);
-            });
-            document.getElementById('moveCount').textContent = moveCount;
-        }
-
-        function moveTile(idx) {
-            const emptyIdx = tiles.indexOf(0);
-            const row = Math.floor(idx / 4);
-            const col = idx % 4;
-            const emptyRow = Math.floor(emptyIdx / 4);
-            const emptyCol = emptyIdx % 4;
-
-            if ((row === emptyRow && Math.abs(col - emptyCol) === 1) || (col === emptyCol && Math.abs(row - emptyRow) === 1)) {
-                [tiles[idx], tiles[emptyIdx]] = [tiles[emptyIdx], tiles[idx]];
-                moveCount++;
-                render();
-            }
-        }
-
-        initGame();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateBreakoutGame() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Breakout Game</title>
-    <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a1a1a; margin: 0; }
-        canvas { border: 3px solid #fff; background: #000; }
-        #info { position: absolute; top: 20px; color: #fff; font-size: 18px; }
-    </style>
-</head>
-<body>
-    <div id="info">Score: <span id="score">0</span> | Lives: <span id="lives">3</span></div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let paddle = { x: 300, y: 550, width: 100, height: 15, speed: 7 };
-        let ball = { x: 400, y: 500, radius: 8, dx: 4, dy: -4, speed: 4 };
-        let bricks = [];
-        let score = 0;
-        let lives = 3;
-        const keys = {};
-
-        for (let row = 0; row < 4; row++) {
-            for (let col = 0; col < 10; col++) {
-                bricks.push({ x: col * 75 + 10, y: row * 20 + 10, width: 70, height: 15, active: true });
-            }
-        }
-
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-
-        function update() {
-            if (keys['ArrowLeft'] && paddle.x > 0) paddle.x -= paddle.speed;
-            if (keys['ArrowRight'] && paddle.x < canvas.width - paddle.width) paddle.x += paddle.speed;
-
-            ball.x += ball.dx;
-            ball.y += ball.dy;
-
-            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) ball.dx *= -1;
-            if (ball.y - ball.radius < 0) ball.dy *= -1;
-
-            if (ball.y + ball.radius > canvas.height) {
-                lives--;
-                ball = { x: 400, y: 500, radius: 8, dx: 4, dy: -4, speed: 4 };
-            }
-
-            if (ball.x > paddle.x && ball.x < paddle.x + paddle.width && ball.y + ball.radius > paddle.y && ball.y + ball.radius < paddle.y + paddle.height) {
-                ball.dy *= -1;
-                ball.y = paddle.y - ball.radius;
-            }
-
-            bricks.forEach(brick => {
-                if (brick.active && ball.x > brick.x && ball.x < brick.x + brick.width && ball.y > brick.y && ball.y < brick.y + brick.height) {
-                    brick.active = false;
-                    ball.dy *= -1;
-                    score += 10;
-                }
-            });
-
-            document.getElementById('score').textContent = score;
-            document.getElementById('lives').textContent = lives;
-        }
-
-        function draw() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#00f';
-            bricks.forEach(brick => {
-                if (brick.active) ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
-            });
-
-            if (lives <= 0 || bricks.every(b => !b.active)) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 40px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(lives <= 0 ? 'GAME OVER' : 'YOU WIN!', canvas.width / 2, canvas.height / 2);
-            }
-        }
-
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateAsteroids() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Asteroids Game</title>
-    <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #000; margin: 0; }
-        canvas { border: 3px solid #0f0; background: #000; }
-        #info { position: absolute; top: 20px; color: #0f0; font-size: 18px; }
-    </style>
-</head>
-<body>
-    <div id="info">Score: <span id="score">0</span> | Level: <span id="level">1</span></div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let player = { x: 400, y: 300, angle: 0, velocity: { x: 0, y: 0 }, radius: 15 };
-        let bullets = [];
-        let asteroids = [];
-        let score = 0;
-        let level = 1;
-        const keys = {};
-
-        function spawnAsteroids() {
-            asteroids = [];
-            for (let i = 0; i < 3 + level; i++) {
-                asteroids.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 2,
-                    vy: (Math.random() - 0.5) * 2,
-                    size: 3
+        function spawnEnemies() {
+            for (let i = 0; i < 3; i++) {
+                enemies.push({
+                    x: Math.random() * (canvas.width - 40),
+                    y: Math.random() * 200,
+                    width: 40,
+                    height: 40,
+                    speed: 2,
+                    health: 2
                 });
             }
         }
+        spawnEnemies();
+        ` : ''}
 
+        ${features.hasScore ? 'let score = 0;' : ''}
+
+        const keys = {};
         window.addEventListener('keydown', e => {
             keys[e.key] = true;
-            if (e.key === ' ') {
-                bullets.push({
-                    x: player.x + Math.cos(player.angle) * 20,
-                    y: player.y + Math.sin(player.angle) * 20,
-                    vx: Math.cos(player.angle) * 5,
-                    vy: Math.sin(player.angle) * 5
-                });
-            }
+            ${features.hasWeapons ? "if (e.key === ' ') shootBullet();" : ''}
         });
         window.addEventListener('keyup', e => keys[e.key] = false);
 
+        ${features.hasWeapons ? `
+        function shootBullet() {
+            player.bullets.push({
+                x: player.x + player.width / 2,
+                y: player.y,
+                width: 5,
+                height: 15,
+                speed: 7
+            });
+        }
+        ` : ''}
+
         function update() {
-            if (keys['ArrowLeft']) player.angle -= 0.1;
-            if (keys['ArrowRight']) player.angle += 0.1;
-            if (keys['ArrowUp']) {
-                player.velocity.x += Math.cos(player.angle) * 0.3;
-                player.velocity.y += Math.sin(player.angle) * 0.3;
-            }
+            if (keys['ArrowLeft']) player.velocityX = -player.speed;
+            if (keys['ArrowRight']) player.velocityX = player.speed;
+            if (!keys['ArrowLeft'] && !keys['ArrowRight']) player.velocityX *= 0.8;
 
-            player.x += player.velocity.x;
-            player.y += player.velocity.y;
-            player.velocity.x *= 0.99;
-            player.velocity.y *= 0.99;
+            ${features.hasGravity ? `
+            player.velocityY += 0.6;
+            if (keys[' '] && player.y >= canvas.height - 50) player.velocityY = -12;
+            ` : ''}
 
-            if (player.x < 0) player.x = canvas.width;
-            if (player.x > canvas.width) player.x = 0;
-            if (player.y < 0) player.y = canvas.height;
+            player.x += player.velocityX;
+            player.y += player.velocityY;
+
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
             if (player.y > canvas.height) player.y = 0;
 
-            bullets = bullets.filter(b => {
-                b.x += b.vx;
-                b.y += b.vy;
-                return b.x > 0 && b.x < canvas.width && b.y > 0 && b.y < canvas.height;
+            ${features.hasWeapons ? `
+            player.bullets = player.bullets.filter(b => {
+                b.y -= b.speed;
+                return b.y > 0;
             });
+            ` : ''}
 
-            asteroids.forEach((a, idx) => {
-                a.x += a.vx;
-                a.y += a.vy;
+            ${features.hasEnemies ? `
+            enemies.forEach((enemy, idx) => {
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 0) {
+                    enemy.x += (dx / dist) * enemy.speed;
+                    enemy.y += (dy / dist) * enemy.speed;
+                }
 
-                if (a.x < 0) a.x = canvas.width;
-                if (a.x > canvas.width) a.x = 0;
-                if (a.y < 0) a.y = canvas.height;
-                if (a.y > canvas.height) a.y = 0;
-
-                bullets.forEach((b, bidx) => {
-                    const dist = Math.hypot(a.x - b.x, a.y - b.y);
-                    if (dist < a.size * 10) {
-                        asteroids.splice(idx, 1);
-                        bullets.splice(bidx, 1);
-                        score += 100 / a.size;
+                player.bullets.forEach((bullet, bidx) => {
+                    if (bullet.x < enemy.x + enemy.width && bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + enemy.height && bullet.y + bullet.height > enemy.y) {
+                        enemy.health--;
+                        player.bullets.splice(bidx, 1);
+                        score += 10;
+                        if (enemy.health <= 0) {
+                            enemies.splice(idx, 1);
+                            score += 50;
+                        }
                     }
                 });
             });
 
-            if (asteroids.length === 0) {
-                level++;
-                spawnAsteroids();
-            }
+            if (enemies.length === 0) spawnEnemies();
+            ` : ''}
 
-            document.getElementById('score').textContent = Math.floor(score);
-            document.getElementById('level').textContent = level;
+            ${features.hasScore ? "document.getElementById('score').textContent = score;" : ''}
+            ${features.hasHealth ? "document.getElementById('health').textContent = player.health;" : ''}
         }
 
         function draw() {
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#010409';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.strokeStyle = '#0f0';
-            ctx.lineWidth = 2;
-            ctx.save();
-            ctx.translate(player.x, player.y);
-            ctx.rotate(player.angle);
-            ctx.beginPath();
-            ctx.moveTo(15, 0);
-            ctx.lineTo(-10, -10);
-            ctx.lineTo(-5, 0);
-            ctx.lineTo(-10, 10);
-            ctx.closePath();
-            ctx.stroke();
-            ctx.restore();
+            ctx.fillStyle = '#58a6ff';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
 
-            ctx.fillStyle = '#fff';
-            bullets.forEach(b => {
-                ctx.fillRect(b.x - 2, b.y - 2, 4, 4);
-            });
+            ${features.hasWeapons ? `
+            ctx.fillStyle = '#79c0ff';
+            player.bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+            ` : ''}
 
-            ctx.strokeStyle = '#0f0';
-            asteroids.forEach(a => {
-                ctx.beginPath();
-                ctx.arc(a.x, a.y, a.size * 10, 0, Math.PI * 2);
-                ctx.stroke();
-            });
+            ${features.hasEnemies ? `
+            ctx.fillStyle = '#f85149';
+            enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
+            ` : ''}
         }
 
         function gameLoop() {
@@ -1581,473 +697,26 @@
             requestAnimationFrame(gameLoop);
         }
 
-        spawnAsteroids();
         gameLoop();
     </script>
 </body>
 </html>`;
+
+            return html;
         }
 
-        function generateBlockGame() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>2D Block Game</title>
-    <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a1a1a; margin: 0; }
-        canvas { border: 3px solid #fff; background: #222; }
-        #info { position: absolute; top: 20px; color: #fff; font-size: 20px; }
-    </style>
-</head>
-<body>
-    <div id="info">Score: <span id="score">0</span> | Game: <span id="status">Running</span></div>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        let score = 0;
-        let gameRunning = true;
-        const blockSize = 40;
-        const gridWidth = canvas.width / blockSize;
-        const gridHeight = canvas.height / blockSize;
-        
-        let grid = Array(gridHeight).fill().map(() => Array(gridWidth).fill(false));
-        let currentBlock = { x: 5, y: 0 };
-        
-        function drawBlock(x, y, color) {
-            ctx.fillStyle = color;
-            ctx.fillRect(x * blockSize + 2, y * blockSize + 2, blockSize - 4, blockSize - 4);
-            ctx.strokeStyle = '#333';
-            ctx.strokeRect(x * blockSize + 2, y * blockSize + 2, blockSize - 4, blockSize - 4);
-        }
-        
-        function drawGame() {
-            ctx.fillStyle = '#222';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            for (let y = 0; y < gridHeight; y++) {
-                for (let x = 0; x < gridWidth; x++) {
-                    if (grid[y][x]) drawBlock(x, y, '#4CAF50');
-                }
-            }
-            
-            drawBlock(currentBlock.x, currentBlock.y, '#2196F3');
-        }
-        
-        function update() {
-            currentBlock.y++;
-            
-            if (currentBlock.y >= gridHeight - 1) {
-                grid[currentBlock.y - 1][currentBlock.x] = true;
-                currentBlock = { x: Math.floor(Math.random() * gridWidth), y: 0 };
-                score++;
-                
-                for (let y = 0; y < gridHeight; y++) {
-                    if (grid[y].every(cell => cell)) {
-                        grid.splice(y, 1);
-                        grid.unshift(Array(gridWidth).fill(false));
-                        score += 10;
-                    }
-                }
-            }
-            
-            if (grid[currentBlock.y] && grid[currentBlock.y][currentBlock.x]) {
-                gameRunning = false;
-                document.getElementById('status').textContent = 'Game Over!';
-            }
-            
-            document.getElementById('score').textContent = score;
-        }
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' && currentBlock.x > 0) currentBlock.x--;
-            if (e.key === 'ArrowRight' && currentBlock.x < gridWidth - 1) currentBlock.x++;
-        });
-        
-        function gameLoop() {
-            drawGame();
-            if (gameRunning) update();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateTicTacToe() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Tic Tac Toe</title>
-    <style>
-        body { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: Arial; margin: 0; }
-        h1 { color: white; }
-        #status { color: white; font-size: 20px; margin-bottom: 20px; min-height: 30px; }
-        .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 2px; background: #333; padding: 2px; }
-        .cell { background: white; width: 100px; height: 100px; font-size: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        button { padding: 10px 20px; font-size: 18px; background: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <h1>Tic Tac Toe</h1>
-    <div id="status">Player X's Turn</div>
-    <div class="board" id="board"></div>
-    <button onclick="resetGame()">Reset</button>
-
-    <script>
-        let board = ['', '', '', '', '', '', '', '', ''];
-        let currentPlayer = 'X';
-        let gameOver = false;
-        const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-        
-        function checkWin() {
-            for (let w of wins) {
-                if (board[w[0]] && board[w[0]] === board[w[1]] && board[w[1]] === board[w[2]]) return true;
-            }
-            return false;
-        }
-        
-        function makeMove(i) {
-            if (board[i] === '' && !gameOver) {
-                board[i] = currentPlayer;
-                render();
-                if (checkWin()) {
-                    document.getElementById('status').textContent = 'Player ' + currentPlayer + ' Wins!';
-                    gameOver = true;
-                } else if (board.every(c => c !== '')) {
-                    document.getElementById('status').textContent = 'Draw!';
-                    gameOver = true;
-                } else {
-                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-                    document.getElementById('status').textContent = 'Player ' + currentPlayer + '\'s Turn';
-                }
-            }
-        }
-        
-        function render() {
-            document.getElementById('board').innerHTML = board.map((c, i) => `<div class="cell" onclick="makeMove(${i})">${c}</div>`).join('');
-        }
-        
-        function resetGame() {
-            board = ['', '', '', '', '', '', '', '', ''];
-            currentPlayer = 'X';
-            gameOver = false;
-            document.getElementById('status').textContent = 'Player X\'s Turn';
-            render();
-        }
-        
-        render();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateSnakeGame() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Snake Game</title>
-    <style>
-        body { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: #1a1a1a; margin: 0; }
-        canvas { border: 3px solid #4CAF50; background: #000; }
-        #info { color: #4CAF50; font-size: 24px; margin-bottom: 20px; }
-        button { margin-top: 20px; padding: 10px 20px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div id="info">Score: <span id="score">0</span></div>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <button onclick="location.reload()">Restart</button>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const size = 20;
-        let snake = [{x:10,y:10}];
-        let food = {x:15,y:15};
-        let dx=1, dy=0, score=0;
-        
-        document.addEventListener('keydown', e => {
-            if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -1; }
-            if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = 1; }
-            if (e.key === 'ArrowLeft' && dx === 0) { dx = -1; dy = 0; }
-            if (e.key === 'ArrowRight' && dx === 0) { dx = 1; dy = 0; }
-        });
-        
-        function gameLoop() {
-            const head = {x: snake[0].x+dx, y: snake[0].y+dy};
-            if (head.x<0 || head.x>=20 || head.y<0 || head.y>=20 || snake.some(s=>s.x===head.x&&s.y===head.y)) {
-                alert('Game Over! Score: '+score);
-                location.reload();
-            }
-            snake.unshift(head);
-            if (head.x === food.x && head.y === food.y) {
-                food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
-                score += 10;
-            } else {
-                snake.pop();
-            }
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#4CAF50';
-            snake.forEach(s => ctx.fillRect(s.x*size, s.y*size, size-1, size-1));
-            ctx.fillStyle = '#FF5722';
-            ctx.fillRect(food.x*size, food.y*size, size-1, size-1);
-            document.getElementById('score').textContent = score;
-            
-            setTimeout(gameLoop, 100);
-        }
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateFlappyBird() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Flappy Bird</title>
-    <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #87CEEB; margin: 0; }
-        canvas { border: 3px solid #333; background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%); }
-        #info { position: absolute; top: 20px; color: #333; font-size: 24px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div id="info">Score: <span id="score">0</span></div>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let bird = {x:50, y:300, vy:0, radius:15};
-        let pipes = [];
-        let score = 0;
-        let running = false;
-        
-        canvas.addEventListener('click', () => {
-            if (!running) {
-                bird = {x:50, y:300, vy:0, radius:15};
-                pipes = [];
-                score = 0;
-                running = true;
-            } else {
-                bird.vy = -8;
-            }
-        });
-        
-        function gameLoop() {
-            ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            if (running) {
-                bird.vy += 0.5;
-                bird.y += bird.vy;
-                
-                if (bird.y > canvas.height || bird.y < 0) running = false;
-                if (pipes.length === 0 || pipes[pipes.length-1].x < 150) {
-                    const gap = 150;
-                    const top = Math.random() * (canvas.height - gap - 100) + 50;
-                    pipes.push({x: canvas.width, top: top});
-                }
-                
-                pipes.forEach(p => {
-                    p.x -= 5;
-                    ctx.fillStyle = '#228B22';
-                    ctx.fillRect(p.x, 0, 80, p.top);
-                    ctx.fillRect(p.x, p.top + gap, 80, canvas.height);
-                    
-                    if (bird.x > p.x && bird.x < p.x+80 && (bird.y < p.top || bird.y > p.top+gap)) running = false;
-                    if (p.x === bird.x - 40) score++;
-                });
-                
-                pipes = pipes.filter(p => p.x > -80);
-            }
-            
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI*2);
-            ctx.fill();
-            
-            if (!running && score > 0) {
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(0,0,canvas.width,canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 30px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('Game Over!', canvas.width/2, canvas.height/2);
-            }
-            
-            document.getElementById('score').textContent = score;
-            requestAnimationFrame(gameLoop);
-        }
-        
-        const gap = 150;
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generatePongGame() {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Pong Game</title>
-    <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a1a1a; margin: 0; }
-        canvas { border: 3px solid white; background: #000; }
-        #score { position: absolute; top: 20px; color: white; font-size: 20px; }
-    </style>
-</head>
-<body>
-    <div id="score">P1: 0 | P2: 0</div>
-    <canvas id="pong" width="800" height="400"></canvas>
-
-    <script>
-        const canvas = document.getElementById('pong');
-        const ctx = canvas.getContext('2d');
-        let p1 = {x:0, y:160, w:10, h:80, dy:0};
-        let p2 = {x:790, y:160, w:10, h:80, dy:0};
-        let ball = {x:400, y:200, w:10, h:10, dx:4, dy:4};
-        let p1s=0, p2s=0;
-        
-        document.addEventListener('keydown', e => {
-            if (e.key === 'w') p1.dy = -6;
-            if (e.key === 's') p1.dy = 6;
-            if (e.key === 'ArrowUp') p2.dy = -6;
-            if (e.key === 'ArrowDown') p2.dy = 6;
-        });
-        document.addEventListener('keyup', () => { p1.dy = 0; p2.dy = 0; });
-        
-        function gameLoop() {
-            p1.y = Math.max(0, Math.min(320, p1.y + p1.dy));
-            p2.y = Math.max(0, Math.min(320, p2.y + p2.dy));
-            ball.x += ball.dx;
-            ball.y += ball.dy;
-            
-            if (ball.y <= 0 || ball.y >= 390) ball.dy *= -1;
-            if (ball.x <= p1.x+p1.w && ball.y >= p1.y && ball.y <= p1.y+p1.h) { ball.dx *= -1; ball.x = p1.x+p1.w; }
-            if (ball.x >= p2.x && ball.y >= p2.y && ball.y <= p2.y+p2.h) { ball.dx *= -1; ball.x = p2.x; }
-            
-            if (ball.x < 0) { p2s++; ball = {x:400, y:200, w:10, h:10, dx:4, dy:4}; }
-            if (ball.x > 800) { p1s++; ball = {x:400, y:200, w:10, h:10, dx:4, dy:4}; }
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, 800, 400);
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(p1.x, p1.y, p1.w, p1.h);
-            ctx.fillRect(p2.x, p2.y, p2.w, p2.h);
-            ctx.fillRect(ball.x, ball.y, ball.w, ball.h);
-            
-            document.getElementById('score').textContent = 'P1: '+p1s+' | P2: '+p2s;
-            requestAnimationFrame(gameLoop);
-        }
-        gameLoop();
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateCustomProject(prompt) {
-            return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generated Project</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 800px;
-            width: 100%;
-            padding: 40px;
-            text-align: center;
-        }
-        h1 { color: #333; margin-bottom: 20px; font-size: 32px; }
-        .description { color: #666; font-size: 18px; margin-bottom: 30px; line-height: 1.6; }
-        .features { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
-        .features h2 { color: #333; margin-bottom: 15px; }
-        .features ul { list-style: none; padding-left: 0; }
-        .features li { color: #666; padding: 10px 0; border-bottom: 1px solid #ddd; }
-        .features li:last-child { border-bottom: none; }
-        button { padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 5px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🚀 Your Custom Project</h1>
-        <div class="description">
-            <p><strong>Project:</strong> ${escapeHtml(prompt)}</p>
-        </div>
-        <div class="features">
-            <h2>✨ AI-Generated Game Features:</h2>
-            <ul>
-                <li>✅ Advanced Physics - Gravity, collisions, and momentum</li>
-                <li>✅ AI Opponents - Smart enemy behavior and pathfinding</li>
-                <li>✅ Score System - Points and level progression</li>
-                <li>✅ Smooth Animation - 60 FPS gameplay</li>
-                <li>✅ Interactive Controls - Keyboard and mouse support</li>
-                <li>✅ Responsive Design - Works on all devices</li>
-            </ul>
-        </div>
-        <div class="description">
-            <p>This complex game engine was generated from your prompt: <strong>${escapeHtml(prompt)}</strong></p>
-            <p style="margin-top: 15px; font-size: 14px; color: #999;">This is a full-featured HTML5 Canvas game with complete game logic!</p>
-        </div>
-        <button onclick="alert('This game is fully functional and ready to play!')">Start Playing</button>
-        <button onclick="location.reload()">Regenerate</button>
-    </div>
-</body>
-</html>`;
-        }
-
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        function copyToClipboard() {
-            const codeOutput = document.getElementById('codeOutput').textContent;
-            navigator.clipboard.writeText(codeOutput).then(() => {
-                const btn = event.target;
-                btn.textContent = '✓ Copied!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = '📋 Copy';
-                    btn.classList.remove('copied');
-                }, 2000);
-            }).catch(() => showError('Failed to copy to clipboard'));
+        function copyCode() {
+            navigator.clipboard.writeText(generatedCode).then(() => {
+                alert('Code copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy code');
+            });
         }
 
         function downloadCode() {
-            const codeOutput = document.getElementById('codeOutput').textContent;
             const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(codeOutput));
-            element.setAttribute('download', 'generated_game.html');
+            element.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(generatedCode));
+            element.setAttribute('download', 'generated_code.html');
             element.style.display = 'none';
             document.body.appendChild(element);
             element.click();
@@ -2055,83 +724,39 @@
         }
 
         function previewCode() {
-            const codeOutput = document.getElementById('codeOutput').textContent;
-            const previewFrame = document.getElementById('previewFrame');
-            previewFrame.srcdoc = codeOutput;
-            document.getElementById('previewModal').classList.add('active');
+            const modal = window.open('', 'Preview', 'width=900,height=700');
+            modal.document.write(generatedCode);
+            modal.document.close();
         }
 
-        function closePreview() {
-            document.getElementById('previewModal').classList.remove('active');
+        function clearChat() {
+            document.getElementById('chatContainer').innerHTML = `
+                <div class="empty-state">
+                    <h2>✨ Code Generator</h2>
+                    <p>Describe any game or project and I'll generate the HTML code for you</p>
+                </div>
+            `;
+            generatedCode = '';
         }
 
-        function clearInput() {
-            document.getElementById('prompt').value = '';
-            document.getElementById('outputSection').classList.remove('active');
-            clearError();
+        function exportCode() {
+            if (!generatedCode) {
+                alert('Generate some code first!');
+                return;
+            }
+            downloadCode();
         }
 
-        function showLoading(show) {
-            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.innerHTML = '<div class="error">' + message + '</div>';
-        }
-
-        function clearError() {
-            document.getElementById('errorMessage').innerHTML = '';
-        }
-
-        document.getElementById('prompt').addEventListener('keypress', function(event) {
-            if (event.key === 'Enter' && event.ctrlKey) generateCode();
+        // Auto-expand textarea
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
         });
     </script>
-</body>
-</html>`;
-        }
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h1>🤖 AI HTML Code Generator Bot</h1>
-        <p class="subtitle">Describe ANY complex game or web project - I'll code it in HTML for you!</p>
-
-        <div class="input-section">
-            <label for="prompt">Describe what you want to create:</label>
-            <textarea id="prompt" placeholder="Examples: Space shooter, RPG adventure game, 3D platformer, Racing game, Puzzle game, Breakout/Brick breaker, Asteroids, 2D block game, Tic-tac-toe, Snake, Flappy bird, Pong, or describe any custom game idea!"></textarea>
-            <div class="button-group">
-                <button class="generate-btn" onclick="generateCode()">🚀 Generate Code</button>
-                <button class="clear-btn" onclick="clearInput()">Clear</button>
-            </div>
-        </div>
-
-        <div class="output-section" id="outputSection">
-            <div class="output-header">
-                <h2>Generated HTML Code</h2>
-                <div class="output-actions">
-                    <button class="preview-btn" onclick="previewCode()">👁️ Preview</button>
-                    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy</button>
-                    <button class="download-btn" onclick="downloadCode()">⬇️ Download</button>
-                </div>
-            </div>
-            <div class="code-output" id="codeOutput"></div>
-        </div>
-
-        <div id="loadingIndicator" class="loading" style="display: none;">
-            <span class="spinner"></span>Generating your code...
-        </div>
-
-        <div id="errorMessage"></div>
-    </div>
-
-    <!-- Preview Modal -->
-    <div id="previewModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closePreview()">&times;</span>
-            <iframe id="previewFrame" style="width: 100%; height: 90vh; border: none;"></iframe>
-        </div>
-    </div>
 </body>
 </html>
