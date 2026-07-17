@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Code Generator Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .clear-btn {
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .clear-btn:hover {
+            background: #efefef;
+        }
+
+        .output-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            display: none;
+        }
+
+        .output-section.active {
+            display: block;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .output-header h2 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .copy-btn, .download-btn {
+            padding: 10px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .copy-btn:hover {
+            background: #e8e8e8;
+        }
+
+        .copy-btn.copied {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .download-btn {
+            background: #4caf50;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .code-output {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            border: 2px solid #ef5350;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group button {
+                width: 100%;
+            }
+
+            .output-actions {
+                flex-direction: column;
+            }
+
+            .output-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 HTML Code Generator Bot</h1>
+        <p class="subtitle">Enter a prompt and I'll generate HTML code for you</p>
+
+        <div class="input-section">
+            <label for="prompt">Enter your prompt:</label>
+            <textarea id="prompt" placeholder="Example: Create a responsive navigation bar with logo and menu items"></textarea>
+            <div class="button-group">
+                <button class="generate-btn" onclick="generateCode()">Generate HTML Code</button>
+                <button class="clear-btn" onclick="clearInput()">Clear</button>
+            </div>
+        </div>
+
+        <div class="output-section" id="outputSection">
+            <div class="output-header">
+                <h2>Generated HTML Code</h2>
+                <div class="output-actions">
+                    <button class="copy-btn" onclick="copyToClipboard()">📋 Copy</button>
+                    <button class="download-btn" onclick="downloadCode()">⬇️ Download</button>
+                </div>
+            </div>
+            <div class="code-output" id="codeOutput"></div>
+        </div>
+
+        <div id="loadingIndicator" class="loading" style="display: none;">
+            <span class="spinner"></span>Generating your HTML code...
+        </div>
+
+        <div id="errorMessage"></div>
+    </div>
+
+    <script>
+        // Mock API - You can replace this with a real API call
+        async function generateCode() {
+            const prompt = document.getElementById('prompt').value.trim();
+            
+            if (!prompt) {
+                showError('Please enter a prompt');
+                return;
+            }
+
+            showLoading(true);
+            clearError();
+
+            try {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Generate HTML based on prompt
+                const generatedHTML = generateHTMLFromPrompt(prompt);
+                
+                document.getElementById('codeOutput').textContent = generatedHTML;
+                document.getElementById('outputSection').classList.add('active');
+                
+                showLoading(false);
+            } catch (error) {
+                showError('Failed to generate code. Please try again.');
+                showLoading(false);
+            }
+        }
+
+        function generateHTMLFromPrompt(prompt) {
+            const lowerPrompt = prompt.toLowerCase();
+
+            // Simple logic to generate HTML based on keywords in prompt
+            let html = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Generated Page</title>\n    <style>\n';
+
+            // Add styles
+            if (lowerPrompt.includes('nav') || lowerPrompt.includes('navigation')) {
+                html += '        * { margin: 0; padding: 0; box-sizing: border-box; }\n';
+                html += '        nav { background-color: #333; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }\n';
+                html += '        nav a { color: white; text-decoration: none; margin: 0 1rem; }\n';
+                html += '        nav a:hover { text-decoration: underline; }\n';
+                html += '        .logo { font-weight: bold; font-size: 1.5rem; color: white; }\n';
+            }
+
+            if (lowerPrompt.includes('card') || lowerPrompt.includes('grid')) {
+                html += '        .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; padding: 2rem; }\n';
+                html += '        .card { border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }\n';
+                html += '        .card h3 { margin-bottom: 0.5rem; }\n';
+                html += '        .card p { color: #666; }\n';
+            }
+
+            if (lowerPrompt.includes('button') || lowerPrompt.includes('form')) {
+                html += '        button { background-color: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; }\n';
+                html += '        button:hover { background-color: #0056b3; }\n';
+                html += '        input { padding: 0.5rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 4px; }\n';
+            }
+
+            if (lowerPrompt.includes('hero') || lowerPrompt.includes('header')) {
+                html += '        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6rem 2rem; text-align: center; }\n';
+                html += '        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }\n';
+                html += '        .hero p { font-size: 1.2rem; }\n';
+            }
+
+            if (lowerPrompt.includes('footer')) {
+                html += '        footer { background-color: #333; color: white; padding: 2rem; text-align: center; margin-top: 3rem; }\n';
+            }
+
+            html += '        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n';
+            html += '    </style>\n</head>\n<body>\n';
+
+            // Add HTML content
+            if (lowerPrompt.includes('nav') || lowerPrompt.includes('navigation')) {
+                html += '    <nav>\n        <div class="logo">Logo</div>\n        <div>\n            <a href="#home">Home</a>\n            <a href="#about">About</a>\n            <a href="#services">Services</a>\n            <a href="#contact">Contact</a>\n        </div>\n    </nav>\n';
+            }
+
+            if (lowerPrompt.includes('hero') || lowerPrompt.includes('header')) {
+                html += '    <div class="hero">\n        <h1>Welcome to Your Page</h1>\n        <p>This is a hero section generated from your prompt</p>\n    </div>\n';
+            }
+
+            if (lowerPrompt.includes('card') || lowerPrompt.includes('grid')) {
+                html += '    <div class="container">\n';
+                html += '        <div class="card">\n            <h3>Card 1</h3>\n            <p>This is a sample card with content.</p>\n        </div>\n';
+                html += '        <div class="card">\n            <h3>Card 2</h3>\n            <p>This is another sample card with content.</p>\n        </div>\n';
+                html += '        <div class="card">\n            <h3>Card 3</h3>\n            <p>This is the third sample card with content.</p>\n        </div>\n';
+                html += '    </div>\n';
+            }
+
+            if (lowerPrompt.includes('form') || lowerPrompt.includes('contact')) {
+                html += '    <form style="max-width: 500px; margin: 2rem auto; padding: 2rem; border: 1px solid #ddd; border-radius: 8px;">\n';
+                html += '        <h2>Contact Form</h2>\n';
+                html += '        <input type="text" placeholder="Your Name" required>\n';
+                html += '        <input type="email" placeholder="Your Email" required>\n';
+                html += '        <textarea placeholder="Your Message" rows="5" style="width: 100%; padding: 0.5rem;"></textarea>\n';
+                html += '        <button type="submit">Submit</button>\n';
+                html += '    </form>\n';
+            }
+
+            if (lowerPrompt.includes('footer')) {
+                html += '    <footer>\n        <p>&copy; 2024 Your Company. All rights reserved.</p>\n    </footer>\n';
+            }
+
+            // Default content if no specific keywords
+            if (!lowerPrompt.includes('nav') && !lowerPrompt.includes('card') && !lowerPrompt.includes('hero')) {
+                html += '    <div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">\n';
+                html += '        <h1>Generated HTML</h1>\n';
+                html += '        <p>Prompt: ' + escapeHtml(prompt) + '</p>\n';
+                html += '        <p>This is your generated HTML based on the prompt above. Customize it as needed!</p>\n';
+                html += '    </div>\n';
+            }
+
+            html += '</body>\n</html>';
+            return html;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function copyToClipboard() {
+            const codeOutput = document.getElementById('codeOutput').textContent;
+            navigator.clipboard.writeText(codeOutput).then(() => {
+                const btn = event.target;
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                showError('Failed to copy to clipboard');
+            });
+        }
+
+        function downloadCode() {
+            const codeOutput = document.getElementById('codeOutput').textContent;
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(codeOutput));
+            element.setAttribute('download', 'generated_page.html');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function clearInput() {
+            document.getElementById('prompt').value = '';
+            document.getElementById('outputSection').classList.remove('active');
+            clearError();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function clearError() {
+            document.getElementById('errorMessage').innerHTML = '';
+        }
+
+        // Allow Enter key to generate code
+        document.getElementById('prompt').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && event.ctrlKey) {
+                generateCode();
+            }
+        });
+    </script>
+</body>
+</html>
