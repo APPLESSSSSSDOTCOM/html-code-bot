@@ -174,33 +174,81 @@
             color: rgba(255, 255, 255, 0.95);
         }
 
-        .code-block {
+        .thinking-animation {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+        }
+
+        .thinking-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            animation: thinking 1.5s ease-in-out infinite;
+        }
+
+        .thinking-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .thinking-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .thinking-dot:nth-child(4) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes thinking {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+
+        .thinking-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+        }
+
+        .code-box {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 90%;
             margin: 12px 0;
-            overflow: hidden;
         }
 
         .code-header {
             background: rgba(0, 0, 0, 0.2);
-            padding: 8px 12px;
+            padding: 12px 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
+            font-size: 12px;
             color: rgba(255, 255, 255, 0.7);
+            border-radius: 6px 6px 0 0;
+            margin: -20px -20px 16px -20px;
         }
 
         .code-content {
-            padding: 12px;
+            padding: 16px;
             overflow-x: auto;
             font-family: 'Courier New', monospace;
             font-size: 12px;
-            line-height: 1.4;
+            line-height: 1.6;
             color: rgba(255, 255, 255, 0.8);
-            max-height: 300px;
+            max-height: 600px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 4px;
         }
 
         .copy-code-btn {
@@ -208,8 +256,8 @@
             border: none;
             color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
-            font-size: 11px;
-            padding: 2px 6px;
+            font-size: 12px;
+            padding: 4px 8px;
             border-radius: 4px;
             transition: all 0.2s;
         }
@@ -317,7 +365,7 @@
         .actions {
             display: flex;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 12px;
             flex-wrap: wrap;
         }
 
@@ -325,9 +373,9 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: rgba(255, 255, 255, 0.9);
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -366,6 +414,9 @@
             }
             .message-content {
                 max-width: 90%;
+            }
+            .code-box {
+                max-width: 100%;
             }
         }
     </style>
@@ -432,13 +483,13 @@
             input.value = '';
             input.style.height = 'auto';
 
-            // Simulate processing
-            addMessageToChat('assistant-loading', 'Processing your request...');
+            // Show thinking animation
+            addMessageToChat('thinking', '');
 
             setTimeout(() => {
                 const response = generateResponse(message);
                 updateLastMessage('assistant', response);
-            }, 1500);
+            }, 2500);
         }
 
         function addMessageToChat(role, content) {
@@ -453,16 +504,19 @@
             messageDiv.className = `message ${role === 'user' ? 'user-message' : ''}`;
             messageDiv.id = `msg-${Date.now()}`;
 
-            if (role === 'assistant-loading') {
-                messageDiv.innerHTML = `
-                    <div class="message-content">
-                        <div class="loading">
-                            <div class="loading-dot"></div>
-                            <div class="loading-dot"></div>
-                            <div class="loading-dot"></div>
-                        </div>
+            if (role === 'thinking') {
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.innerHTML = `
+                    <div class="thinking-animation">
+                        <span class="thinking-text">Thinking</span>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
+                        <div class="thinking-dot"></div>
                     </div>
                 `;
+                messageDiv.appendChild(contentDiv);
             } else {
                 const messageContent = document.createElement('div');
                 messageContent.className = 'message-content';
@@ -487,26 +541,30 @@
                 if (content.includes('<!DOCTYPE')) {
                     // This is code
                     generatedCode = content;
-                    const div = document.createElement('div');
-                    div.className = 'message-content';
-                    div.innerHTML = `
-                        Generated HTML code. You can preview, copy, or download it.
-                        <div class="code-block">
-                            <div class="code-header">
-                                <span>generated_code.html</span>
-                                <button class="copy-code-btn" onclick="copyCode()">Copy</button>
-                            </div>
-                            <div class="code-content">${escapeHtml(content.substring(0, 500))}...</div>
-                        </div>
+                    const codeBox = document.createElement('div');
+                    codeBox.className = 'code-box';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'code-header';
+                    header.innerHTML = `
+                        <span>generated_code.html</span>
+                        <button class="copy-code-btn" onclick="copyCode()">Copy Full</button>
                     `;
-                    lastMessage.appendChild(div);
+                    codeBox.appendChild(header);
+
+                    const codeContent = document.createElement('div');
+                    codeContent.className = 'code-content';
+                    codeContent.textContent = content;
+                    codeBox.appendChild(codeContent);
+
+                    lastMessage.appendChild(codeBox);
 
                     // Add action buttons
                     const actions = document.createElement('div');
                     actions.className = 'actions';
                     actions.innerHTML = `
                         <button class="action-btn" onclick="previewCode()">👁️ Preview</button>
-                        <button class="action-btn" onclick="copyCode()">📋 Copy Full Code</button>
+                        <button class="action-btn" onclick="copyCode()">📋 Copy Code</button>
                         <button class="action-btn" onclick="downloadCode()">⬇️ Download</button>
                     `;
                     lastMessage.appendChild(actions);
